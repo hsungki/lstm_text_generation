@@ -9,13 +9,12 @@ nltk.download('punkt')
 
 # Load Text
 file_paths = ['The Old Man and the Sea.txt', 'The Sun Also Rises.txt', 'A Farewell to Arms.txt']
-# file_paths = ['The Old Man and the Sea.txt']
 text = ""
 for f in file_paths:
     text += open('text/'+f, 'r', encoding='utf-8-sig').read().strip()
 
 text = re.sub(r'[_*]', '', text)
-text = re.sub(r'\s+', ' ', text)  # " " can also be used to indicate spaces.
+text = re.sub(r'\s+', ' ', text)  
 print('The set of characters: ', sorted(set(text)))
 
 # Tokenization
@@ -38,24 +37,6 @@ def filter_by_max(_list, _max_length):
 max_length = 40
 tokenized_sentences = filter_by_max(tokenized_sentences, max_length)
 data_size = len(tokenized_sentences)
-
-"""
-# Shift by one position
-train_input = [s[:-1] for s in tokenized_sentences]
-train_output = [s[1:] for s in tokenized_sentences]
-train_input = tf.keras.preprocessing.sequence.pad_sequences(train_input, padding='post')
-train_output = tf.keras.preprocessing.sequence.pad_sequences(train_output, padding='post')
-
-# Tensorflow Dataset
-batch_size = 64
-buffer_size = 12000
-num_epochs = 10
-train_dataset = tf.data.Dataset.from_tensor_slices((train_input, train_output))
-# train_dataset = train_dataset.cache()
-train_dataset = train_dataset.shuffle(buffer_size)
-train_dataset = train_dataset.repeat().batch(batch_size, drop_remainder=True)
-# train_dataset = train_dataset.prefetch(tf.data.experimental.AUTOTUNE)
-"""
 
 
 # Shift sentences by one position to create input and output
@@ -112,6 +93,7 @@ def build_model(_lstm_units, _batch_size, _vocab_size, _embedding_size, stateful
 model = build_model(lstm_units, batch_size, vocab_size, embedding_size, stateful=False)
 print(model.summary())
 
+
 # Optimizer and Loss Function
 optimizer_function = tf.keras.optimizers.Adam()
 loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
@@ -149,12 +131,6 @@ history = model.fit(train_dataset,
                     validation_steps=(data_size-train_size)//batch_size,
                     verbose=1,
                     callbacks=[cp_callback])
-#history = model.fit(train_input, train_output,
-#                    validation_data=(valid_input, valid_output),
-#                    epochs=num_epochs,
-#                    batch_size=batch_size,
-#                    verbose=1,
-#                    callbacks=[cp_callback])
 
 
 # Text Generation
